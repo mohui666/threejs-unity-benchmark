@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+import { spawn, type SpawnOptions } from "node:child_process";
 import { mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import type {
@@ -39,6 +39,15 @@ export interface UnityCollectionResult {
   probe: UnityProbeResult;
   log: UnityLogResult;
   normalized: CollectorResult;
+}
+
+export function unityPlayerSpawnOptions(cwd: string, env: NodeJS.ProcessEnv): SpawnOptions {
+  return {
+    cwd,
+    env,
+    windowsHide: false,
+    stdio: ["ignore", "pipe", "pipe"],
+  };
 }
 
 export interface UnityProbeResult {
@@ -159,12 +168,7 @@ export async function collectUnity(options: UnityCollectionOptions): Promise<Uni
   const timeoutMs = options.timeoutMs
     ?? unityReadyTimeoutMs(options.target) + options.warmupMs + options.durationMs + 30_000;
   const startedAt = new Date().toISOString();
-  const child = spawn(executable, args, {
-    cwd,
-    env,
-    windowsHide: true,
-    stdio: ["ignore", "pipe", "pipe"],
-  });
+  const child = spawn(executable, args, unityPlayerSpawnOptions(cwd, env));
   let stdout = "";
   let stderr = "";
   child.stdout!.setEncoding("utf8");

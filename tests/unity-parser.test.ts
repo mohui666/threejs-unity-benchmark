@@ -9,6 +9,7 @@ import {
   parseBridgePerfLine,
   parseUnityLog,
   parseUnityProbeResult,
+  unityPlayerSpawnOptions,
 } from "../src/collectors/unity.js";
 
 const fixture = (name: string): string => resolve(process.cwd(), "fixtures", "unity", name);
@@ -55,6 +56,16 @@ test("normalizes probe and bridge metrics to the canonical metric IDs", async ()
   assert.equal(normalized.metrics["bridge.protocol_errors"]?.value, 1);
   assert.equal(normalized.metrics["bridge.recovery_count"]?.value, 2);
   assert.equal(normalized.metrics["stability.scenario_completed"]?.value, 1);
+});
+
+test("launches Unity Players with a visible host window", () => {
+  const env = { THREE_UNITY_TEST: "1" };
+  const options = unityPlayerSpawnOptions("C:\\benchmark", env);
+
+  assert.equal(options.windowsHide, false);
+  assert.equal(options.cwd, "C:\\benchmark");
+  assert.equal(options.env, env);
+  assert.deepEqual(options.stdio, ["ignore", "pipe", "pipe"]);
 });
 
 test("launches a Player-compatible process and reads its probe artifact and log", async () => {
