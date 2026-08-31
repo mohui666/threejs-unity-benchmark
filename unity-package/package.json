@@ -1,0 +1,15 @@
+{
+  "name": "com.three-unity.performance-probe",
+  "version": "0.1.0",
+  "displayName": "Three.js Unity Performance Probe",
+  "description": "Runtime performance probe used by threejs-unity-benchmark.",
+  "unity": "2021.3",
+  "author": {
+    "name": "Three.js Unity Benchmark"
+  },
+  "keywords": [
+    "performance",
+    "benchmark",
+    "profiler"
+  ]
+}

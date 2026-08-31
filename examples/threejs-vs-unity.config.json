@@ -1,0 +1,167 @@
+{
+  "$schema": "../schemas/config.schema.json",
+  "schemaVersion": "1.0.0",
+  "experiment": {
+    "name": "Original Three.js vs converted Unity Player",
+    "seed": 20260831,
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "frameBudgetMs": 16.6667,
+    "warmupMs": 15000,
+    "measureMs": 60000,
+    "repetitions": 7,
+    "runOrder": "alternating",
+    "betweenRunsMs": 5000
+  },
+  "targets": {
+    "before": {
+      "id": "threejs-original",
+      "label": "Original Three.js build",
+      "runtime": "web",
+      "variant": "threejs-original",
+      "url": "http://127.0.0.1:4173",
+      "launch": {
+        "command": "node",
+        "args": [
+          "node_modules/vite/bin/vite.js",
+          "preview",
+          "--host",
+          "127.0.0.1",
+          "--port",
+          "4173"
+        ],
+        "cwd": "../path/to/original-threejs"
+      },
+      "ready": {
+        "type": "web-expression",
+        "expression": "globalThis.gameReady === true && typeof globalThis.runThreeUnityBenchmark === 'function'",
+        "timeoutMs": 60000
+      },
+      "metadata": {
+        "artifactPath": "../path/to/original-threejs/dist"
+      }
+    },
+    "after": {
+      "id": "unity-converted",
+      "label": "Converted Unity Windows Player",
+      "runtime": "unity",
+      "variant": "unity-native-assets",
+      "executable": "../path/to/unity-build/ConvertedGame.exe",
+      "cwd": "../path/to/unity-build",
+      "args": [
+        "-screen-width",
+        "1920",
+        "-screen-height",
+        "1080",
+        "-screen-fullscreen",
+        "0",
+        "--benchmark-seed",
+        "20260831",
+        "--benchmark-scenario",
+        "stress-route-01"
+      ],
+      "ready": {
+        "type": "log",
+        "pattern": "^BENCHMARK_SCENE_READY$",
+        "timeoutMs": 60000
+      },
+      "metadata": {
+        "artifactPath": "../path/to/unity-build",
+        "threeunityPath": "../path/to/conversion/scene.threeunity"
+      }
+    }
+  },
+  "scenario": {
+    "adapter": "./scenarios/threejs-vs-unity.mjs",
+    "parameters": {
+      "scenario": "stress-route-01",
+      "objectCount": 500,
+      "cameraPath": "main-loop"
+    }
+  },
+  "collectors": {
+    "web": {
+      "enabled": true,
+      "required": true,
+      "options": {
+        "headless": false,
+        "channel": "msedge",
+        "deviceScaleFactor": 1
+      }
+    },
+    "unity": {
+      "enabled": true,
+      "required": true
+    },
+    "processTree": {
+      "enabled": true,
+      "required": true,
+      "intervalMs": 500
+    },
+    "presentmon": {
+      "enabled": true,
+      "required": true,
+      "options": {
+        "binaryPath": "C:/Tools/PresentMon/PresentMon.exe",
+        "metricsVersion": "v2"
+      }
+    },
+    "bridgeLog": {
+      "enabled": true,
+      "required": false
+    }
+  },
+  "gates": [
+    {
+      "metric": "frame.cadence.interval_ms.p95",
+      "required": true,
+      "maxRegressionPercent": 5,
+      "minSampleCount": 300,
+      "minCoverageRatio": 0.98
+    },
+    {
+      "metric": "frame.cadence.fps_1pct_low",
+      "required": true,
+      "maxRegressionPercent": 5,
+      "minSampleCount": 300,
+      "minCoverageRatio": 0.98
+    },
+    {
+      "metric": "frame.cadence.deadline_miss_ratio",
+      "required": true,
+      "maxRegressionPercent": 5,
+      "minSampleCount": 300,
+      "minCoverageRatio": 0.98
+    },
+    {
+      "metric": "cpu.process_tree.core_percent.mean",
+      "required": true,
+      "maxRegressionPercent": 10,
+      "minCoverageRatio": 0.95
+    },
+    {
+      "metric": "memory.process_tree.working_set_bytes.peak",
+      "required": true,
+      "maxRegressionPercent": 10,
+      "minCoverageRatio": 0.95
+    },
+    {
+      "metric": "stability.crash_count",
+      "required": true,
+      "maxAbsolute": 0
+    },
+    {
+      "metric": "stability.nonzero_exit_count",
+      "required": true,
+      "maxAbsolute": 0
+    },
+    {
+      "metric": "stability.scenario_completed",
+      "required": true,
+      "minAbsolute": 1
+    }
+  ],
+  "outputDirectory": "../.bench-results"
+}

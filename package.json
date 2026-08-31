@@ -1,0 +1,64 @@
+{
+  "name": "threejs-unity-benchmark",
+  "version": "0.1.0",
+  "description": "Compare the performance of original Three.js builds and their Unity conversions.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mohui666/threejs-unity-benchmark.git"
+  },
+  "homepage": "https://github.com/mohui666/threejs-unity-benchmark#readme",
+  "bugs": "https://github.com/mohui666/threejs-unity-benchmark/issues",
+  "type": "module",
+  "bin": {
+    "three-unity-perf": "./dist/cli.js",
+    "threeunity-bench": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./web": {
+      "types": "./dist/web-api.d.ts",
+      "import": "./dist/web-api.js"
+    }
+  },
+  "files": [
+    "dist",
+    "schemas",
+    "unity-package",
+    "examples",
+    "docs",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "tsc -p tsconfig.tests.json && node --test dist-tests/tests/*.test.js",
+    "check": "npm run build && npm test",
+    "smoke:web": "npm run build && node dist/cli.js run --config examples/smoke.config.json --json"
+  },
+  "keywords": [
+    "three.js",
+    "unity",
+    "benchmark",
+    "performance",
+    "webgl",
+    "webview2"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "commander": "^15.0.0",
+    "playwright": "^1.62.1",
+    "systeminformation": "^5.33.6",
+    "yaml": "^2.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.0",
+    "three": "^0.185.1",
+    "typescript": "^7.0.2"
+  }
+}

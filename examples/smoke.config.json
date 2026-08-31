@@ -1,0 +1,57 @@
+{
+  "$schema": "../schemas/config.schema.json",
+  "schemaVersion": "1.0.0",
+  "experiment": {
+    "name": "Three.js collector smoke",
+    "seed": 42,
+    "viewport": { "width": 960, "height": 540 },
+    "frameBudgetMs": 16.6667,
+    "warmupMs": 500,
+    "measureMs": 1800,
+    "repetitions": 1,
+    "runOrder": "alternating",
+    "betweenRunsMs": 100
+  },
+  "targets": {
+    "before": {
+      "id": "web-before",
+      "runtime": "web",
+      "variant": "threejs-original",
+      "url": "http://127.0.0.1:4328",
+      "launch": {
+        "command": "node",
+        "args": ["fixtures/web/server.mjs", "4328"],
+        "cwd": ".."
+      },
+      "ready": { "type": "http", "timeoutMs": 10000 },
+      "metadata": { "artifactPath": "../fixtures/web" }
+    },
+    "after": {
+      "id": "web-after-control",
+      "runtime": "web",
+      "variant": "custom",
+      "url": "http://127.0.0.1:4328",
+      "launch": {
+        "command": "node",
+        "args": ["fixtures/web/server.mjs", "4328"],
+        "cwd": ".."
+      },
+      "ready": { "type": "http", "timeoutMs": 10000 },
+      "metadata": { "artifactPath": "../fixtures/web" }
+    }
+  },
+  "scenario": {
+    "adapter": "./scenarios/smoke.mjs",
+    "parameters": {}
+  },
+  "collectors": {
+    "web": { "enabled": true, "required": true, "options": { "headless": true, "channel": "msedge" } },
+    "processTree": { "enabled": true, "required": true, "intervalMs": 250 },
+    "presentmon": { "enabled": false, "required": false }
+  },
+  "gates": [
+    { "metric": "stability.crash_count", "maxAbsolute": 0, "required": true },
+    { "metric": "stability.scenario_completed", "minAbsolute": 1, "required": true }
+  ],
+  "outputDirectory": "../.bench-results"
+}

@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/mohui666/threejs-unity-benchmark/main/schemas/run.schema.json",
+  "title": "Three.js to Unity benchmark run",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "runId", "targetId", "targetRuntime", "targetVariant", "index", "order", "status", "startedAt", "durationMs", "metrics", "artifacts", "warnings", "errors"],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "runId": { "type": "string", "minLength": 1 },
+    "targetId": { "type": "string", "minLength": 1 },
+    "targetRuntime": { "enum": ["web", "unity"] },
+    "targetVariant": { "enum": ["threejs-original", "unity-web-bridge", "unity-native-assets", "custom"] },
+    "index": { "type": "integer", "minimum": 0 },
+    "order": { "type": "integer", "minimum": 0 },
+    "status": { "enum": ["completed", "failed", "cancelled"] },
+    "startedAt": { "type": "string", "format": "date-time" },
+    "endedAt": { "type": "string", "format": "date-time" },
+    "durationMs": { "type": "number", "minimum": 0 },
+    "phases": { "$ref": "#/$defs/phases" },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/metricMeasurement" }
+    },
+    "artifacts": { "type": "array", "items": { "$ref": "#/$defs/artifact" } },
+    "warnings": { "type": "array", "items": { "$ref": "#/$defs/issue" } },
+    "errors": { "type": "array", "items": { "$ref": "#/$defs/issue" } },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/jsonValue" }
+    }
+  },
+  "$defs": {
+    "jsonValue": {
+      "anyOf": [
+        { "type": ["string", "number", "boolean", "null"] },
+        { "type": "array", "items": { "$ref": "#/$defs/jsonValue" } },
+        { "type": "object", "additionalProperties": { "$ref": "#/$defs/jsonValue" } }
+      ]
+    },
+    "phases": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "launchMs": { "type": "number", "minimum": 0 },
+        "readyMs": { "type": "number", "minimum": 0 },
+        "warmupMs": { "type": "number", "minimum": 0 },
+        "measurementMs": { "type": "number", "minimum": 0 },
+        "cleanupMs": { "type": "number", "minimum": 0 }
+      }
+    },
+    "metricMeasurement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "unit", "sampleCount", "source", "comparable"],
+      "properties": {
+        "status": { "enum": ["measured", "unavailable", "invalid"] },
+        "value": { "type": "number" },
+        "unit": { "type": "string", "minLength": 1 },
+        "sampleCount": { "type": "integer", "minimum": 0 },
+        "source": { "type": "string", "minLength": 1 },
+        "comparable": { "type": "boolean" },
+        "coverageRatio": { "type": "number", "minimum": 0, "maximum": 1 },
+        "reason": { "type": "string", "minLength": 1 }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "measured" } }, "required": ["status"] },
+          "then": { "required": ["value"] }
+        }
+      ]
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "mediaType"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "mediaType": { "type": "string", "minLength": 1 },
+        "recordCount": { "type": "integer", "minimum": 0 },
+        "description": { "type": "string", "minLength": 1 }
+      }
+    },
+    "issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message"],
+      "properties": {
+        "code": { "type": "string", "minLength": 1 },
+        "message": { "type": "string", "minLength": 1 },
+        "scope": { "type": "string", "minLength": 1 },
+        "retryable": { "type": "boolean" },
+        "details": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/jsonValue" }
+        }
+      }
+    }
+  }
+}

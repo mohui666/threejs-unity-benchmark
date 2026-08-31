@@ -1,0 +1,8 @@
+THREE_UNITY_PERF_PROBE_STARTED runId=fixture-run warmupMs=1000 durationMs=5000
+THREE_UNITY_PERF_MEASUREMENT_STARTED runId=fixture-run
+THREE_UNITY_BRIDGE_PERF profile=fixture writer=background rx=10 tx=20 rxChars=1000 txChars=2000 coalesced=2 backpressure=0 dropped=0 inPending=1 outPending=2 maxIn=2 maxOut=3 transportResets=0 sessionRestarts=0 inboundOverflow=0 diagnosticOverflow=0 inputAgeMs=12
+THREE_UNITY_LOGIC_PROTOCOL_ERROR fixture-error
+THREE_UNITY_LOGIC_FALLBACK profile=fixture reason=fixture
+THREE_UNITY_BRIDGE_PERF profile=fixture writer=background rx=22 tx=32 rxChars=2200 txChars=3200 coalesced=4 backpressure=1 dropped=0 inPending=0 outPending=1 maxIn=2 maxOut=3 transportResets=1 sessionRestarts=1 inboundOverflow=0 diagnosticOverflow=0 inputAgeMs=20
+THREE_UNITY_PERF_CHECKPOINT runId=fixture-run name=scenario-complete value=1
+THREE_UNITY_PERF_RESULT runId=fixture-run frames=300 measuredMs=5000

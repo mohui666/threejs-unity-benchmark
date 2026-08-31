@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/mohui666/threejs-unity-benchmark/main/schemas/comparison.schema.json",
+  "title": "Three.js to Unity benchmark comparison",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "comparisonId", "createdAt", "beforeTargetId", "afterTargetId", "pairCount", "verdict", "metrics", "warnings", "errors"],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "comparisonId": { "type": "string", "minLength": 1 },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "beforeTargetId": { "type": "string", "minLength": 1 },
+    "afterTargetId": { "type": "string", "minLength": 1 },
+    "pairCount": { "type": "integer", "minimum": 0 },
+    "verdict": { "enum": ["pass", "regression", "inconclusive"] },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/metricComparison" }
+    },
+    "warnings": { "type": "array", "items": { "$ref": "#/$defs/issue" } },
+    "errors": { "type": "array", "items": { "$ref": "#/$defs/issue" } }
+  },
+  "$defs": {
+    "jsonValue": {
+      "anyOf": [
+        { "type": ["string", "number", "boolean", "null"] },
+        { "type": "array", "items": { "$ref": "#/$defs/jsonValue" } },
+        { "type": "object", "additionalProperties": { "$ref": "#/$defs/jsonValue" } }
+      ]
+    },
+    "aggregate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["count", "median", "mad", "min", "max", "unit", "source"],
+      "properties": {
+        "count": { "type": "integer", "minimum": 1 },
+        "median": { "type": "number" },
+        "mad": { "type": "number", "minimum": 0 },
+        "min": { "type": "number" },
+        "max": { "type": "number" },
+        "unit": { "type": "string", "minLength": 1 },
+        "source": { "type": "string", "minLength": 1 }
+      }
+    },
+    "confidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["low", "high", "level"],
+      "properties": {
+        "low": { "type": "number" },
+        "high": { "type": "number" },
+        "level": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1 }
+      }
+    },
+    "paired": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["count", "deltaAbsolute", "confidenceBasis", "confidence95"],
+      "properties": {
+        "count": { "type": "integer", "minimum": 1 },
+        "deltaAbsolute": { "type": "number" },
+        "deltaPercent": { "type": "number" },
+        "ratio": { "type": "number" },
+        "improvementPercent": { "type": "number" },
+        "confidenceBasis": { "enum": ["improvementPercent", "deltaAbsolute"] },
+        "confidence95": { "$ref": "#/$defs/confidence" }
+      }
+    },
+    "gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["configured", "reason"],
+      "properties": {
+        "configured": { "type": "boolean" },
+        "passed": { "type": "boolean" },
+        "reason": { "type": "string", "minLength": 1 }
+      }
+    },
+    "metricComparison": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["metric", "unit", "direction", "verdict", "gate"],
+      "properties": {
+        "metric": { "type": "string", "minLength": 1 },
+        "unit": { "type": "string", "minLength": 1 },
+        "direction": { "enum": ["lower", "higher", "zero", "informational"] },
+        "before": { "$ref": "#/$defs/aggregate" },
+        "after": { "$ref": "#/$defs/aggregate" },
+        "paired": { "$ref": "#/$defs/paired" },
+        "verdict": { "enum": ["improved", "neutral", "regressed", "inconclusive", "unavailable"] },
+        "gate": { "$ref": "#/$defs/gate" }
+      }
+    },
+    "issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message"],
+      "properties": {
+        "code": { "type": "string", "minLength": 1 },
+        "message": { "type": "string", "minLength": 1 },
+        "scope": { "type": "string", "minLength": 1 },
+        "retryable": { "type": "boolean" },
+        "details": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/jsonValue" }
+        }
+      }
+    }
+  }
+}

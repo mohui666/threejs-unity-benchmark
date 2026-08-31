@@ -1,0 +1,202 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/mohui666/threejs-unity-benchmark/main/schemas/config.schema.json",
+  "title": "Three.js to Unity benchmark configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "experiment", "targets"],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "experiment": { "$ref": "#/$defs/experiment" },
+    "targets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["before", "after"],
+      "properties": {
+        "before": { "$ref": "#/$defs/target" },
+        "after": { "$ref": "#/$defs/target" }
+      }
+    },
+    "scenario": { "$ref": "#/$defs/scenario" },
+    "collectors": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/collector" }
+    },
+    "gates": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/gate" }
+    },
+    "outputDirectory": { "type": "string", "minLength": 1 }
+  },
+  "$defs": {
+    "jsonValue": {
+      "anyOf": [
+        { "type": ["string", "number", "boolean", "null"] },
+        { "type": "array", "items": { "$ref": "#/$defs/jsonValue" } },
+        { "type": "object", "additionalProperties": { "$ref": "#/$defs/jsonValue" } }
+      ]
+    },
+    "viewport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["width", "height"],
+      "properties": {
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "experiment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "seed", "viewport", "frameBudgetMs", "warmupMs", "measureMs", "repetitions", "runOrder"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "seed": { "type": "integer" },
+        "viewport": { "$ref": "#/$defs/viewport" },
+        "frameBudgetMs": { "type": "number", "exclusiveMinimum": 0 },
+        "warmupMs": { "type": "integer", "minimum": 0 },
+        "measureMs": { "type": "integer", "minimum": 1 },
+        "repetitions": { "type": "integer", "minimum": 1 },
+        "runOrder": {
+          "enum": ["alternating", "before-first", "after-first", "randomized"]
+        },
+        "betweenRunsMs": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "launch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["command"],
+      "properties": {
+        "command": { "type": "string", "minLength": 1 },
+        "args": { "type": "array", "items": { "type": "string" } },
+        "cwd": { "type": "string", "minLength": 1 },
+        "env": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "ready": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "delayMs"],
+          "properties": {
+            "type": { "const": "delay" },
+            "delayMs": { "type": "integer", "minimum": 0 }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": {
+            "type": { "const": "http" },
+            "url": { "type": "string", "format": "uri" },
+            "timeoutMs": { "type": "integer", "minimum": 1 }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "pattern"],
+          "properties": {
+            "type": { "const": "log" },
+            "pattern": { "type": "string", "minLength": 1 },
+            "timeoutMs": { "type": "integer", "minimum": 1 }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "expression"],
+          "properties": {
+            "type": { "const": "web-expression" },
+            "expression": { "type": "string", "minLength": 1 },
+            "timeoutMs": { "type": "integer", "minimum": 1 }
+          }
+        }
+      ]
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "runtime", "variant"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$" },
+        "label": { "type": "string", "minLength": 1 },
+        "runtime": { "enum": ["web", "unity"] },
+        "variant": {
+          "enum": ["threejs-original", "unity-web-bridge", "unity-native-assets", "custom"]
+        },
+        "url": { "type": "string", "format": "uri" },
+        "executable": { "type": "string", "minLength": 1 },
+        "args": { "type": "array", "items": { "type": "string" } },
+        "cwd": { "type": "string", "minLength": 1 },
+        "env": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "launch": { "$ref": "#/$defs/launch" },
+        "ready": { "$ref": "#/$defs/ready" },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/jsonValue" }
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "runtime": { "const": "web" } }, "required": ["runtime"] },
+          "then": { "required": ["url"] }
+        },
+        {
+          "if": { "properties": { "runtime": { "const": "unity" } }, "required": ["runtime"] },
+          "then": { "anyOf": [{ "required": ["executable"] }, { "required": ["launch"] }] }
+        }
+      ]
+    },
+    "scenario": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["adapter"],
+      "properties": {
+        "adapter": { "type": "string", "minLength": 1 },
+        "exportName": { "type": "string", "minLength": 1 },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/jsonValue" }
+        }
+      }
+    },
+    "collector": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "required": { "type": "boolean" },
+        "intervalMs": { "type": "integer", "minimum": 1 },
+        "options": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/jsonValue" }
+        }
+      }
+    },
+    "gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["metric"],
+      "properties": {
+        "metric": { "type": "string", "minLength": 1 },
+        "required": { "type": "boolean" },
+        "maxRegressionPercent": { "type": "number", "minimum": 0 },
+        "minImprovementPercent": { "type": "number" },
+        "maxAbsolute": { "type": "number" },
+        "minAbsolute": { "type": "number" },
+        "minSampleCount": { "type": "integer", "minimum": 1 },
+        "minCoverageRatio": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    }
+  }
+}

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Three.js benchmark fixture</title>
+  <style>html,body,canvas{width:100%;height:100%;margin:0;display:block;background:#07101f}#status{position:fixed;left:12px;top:10px;color:#d9e8ff;font:12px system-ui}</style>
+</head>
+<body>
+  <div id="status">booting</div>
+  <script type="module">
+    import * as THREE from "/three.module.js";
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(1);
+    renderer.setSize(innerWidth, innerHeight);
+    document.body.append(renderer.domElement);
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x07101f);
+    const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 100);
+    camera.position.set(0, 3, 8);
+    const geometry = new THREE.BoxGeometry(0.38, 0.38, 0.38);
+    const material = new THREE.MeshStandardMaterial({ color: 0x61a8ff, roughness: 0.38, metalness: 0.12 });
+    const cubes = [];
+    for (let index = 0; index < 180; index++) {
+      const cube = new THREE.Mesh(geometry, material);
+      cube.position.set((index % 15 - 7) * 0.52, (Math.floor(index / 15) - 5.5) * 0.52, Math.sin(index * 0.37) * 0.5);
+      scene.add(cube);
+      cubes.push(cube);
+    }
+    scene.add(new THREE.HemisphereLight(0xb9d7ff, 0x18243a, 2.2));
+    const key = new THREE.DirectionalLight(0xffffff, 3);
+    key.position.set(4, 7, 5);
+    scene.add(key);
+    let frame = 0;
+    let accumulatedRotation = 0;
+    function animate(time) {
+      frame += 1;
+      const rotation = time * 0.00018;
+      accumulatedRotation = rotation;
+      for (let index = 0; index < cubes.length; index++) {
+        cubes[index].rotation.set(rotation + index * 0.01, rotation * 1.4, 0);
+      }
+      renderer.render(scene, camera);
+      const probe = globalThis.__THREE_UNITY_PERF__;
+      if (probe) {
+        probe.setMetric("render.three.draw_calls", renderer.info.render.calls, { unit: "count/frame", direction: "lower" });
+        probe.setMetric("render.three.triangles", renderer.info.render.triangles, { unit: "count/frame", direction: "informational" });
+        probe.setMetric("render.three.geometries", renderer.info.memory.geometries, { unit: "count", direction: "lower" });
+        probe.setMetric("render.three.textures", renderer.info.memory.textures, { unit: "count", direction: "lower" });
+      }
+      if (frame % 45 === 0) {
+        const until = performance.now() + 55;
+        while (performance.now() < until) Math.sqrt(frame * 37);
+      }
+      requestAnimationFrame(animate);
+    }
+    addEventListener("resize", () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
+    globalThis.fixtureState = { get frame() { return frame; }, get rotation() { return accumulatedRotation; } };
+    globalThis.gameReady = true;
+    document.querySelector("#status").textContent = "ready";
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>

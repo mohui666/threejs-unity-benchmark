@@ -1,0 +1,3 @@
+Application,ProcessID,SwapChainAddress,Runtime,SyncInterval,PresentFlags,Dropped,TimeInSeconds,msInPresentAPI,msBetweenPresents,AllowsTearing,PresentMode,msUntilRenderComplete,msUntilDisplayed,msBetweenDisplayChange,msFlipDelay,msUntilRenderStart,msGPUActive,msSinceInput
+game.exe,4242,0xABC,DXGI,1,0,0,1.250,0.12,16.67,1,Hardware: Independent Flip,5.1,8.2,16.6,0.2,1.5,4.2,NA
+game.exe,4242,0xABC,DXGI,1,0,1,1.267,0.08,16.70,1,Hardware: Independent Flip,4.9,NA,NA,0.1,1.4,4.0,23.0
